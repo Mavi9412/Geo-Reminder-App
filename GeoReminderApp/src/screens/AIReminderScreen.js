@@ -12,7 +12,7 @@ import {
   Platform,
   Animated,
 } from 'react-native';
-import { Audio } from 'expo-av';
+import { useAudioRecorder, AudioModule, RecordingOptionsPresets } from 'expo-audio';
 import { parseReminderWithAI, transcribeAudio, GROQ_API_KEY } from '../services/groq';
 import { searchLocation } from '../services/geocoding';
 import { saveReminder } from '../services/storage';
@@ -34,7 +34,7 @@ export default function AIReminderScreen({ navigation }) {
   const [selectedLocation, setSelectedLocation] = useState(null);
 
   // Voice recording state
-  const [recording, setRecording] = useState(null);
+  const audioRecorder = useAudioRecorder(RecordingOptionsPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const pulseLoop = useRef(null);
@@ -56,18 +56,16 @@ export default function AIReminderScreen({ navigation }) {
 
   const startRecording = async () => {
     try {
-      const { granted } = await Audio.requestPermissionsAsync();
+      const { granted } = await AudioModule.requestRecordingPermissionsAsync();
       if (!granted) return Alert.alert('Permission Denied', 'Microphone access is required for voice input.');
 
-      await Audio.setAudioModeAsync({
+      await AudioModule.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
 
-      const { recording: rec } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      setRecording(rec);
+      await audioRecorder.prepareToRecordAsync(RecordingOptionsPresets.HIGH_QUALITY);
+      audioRecorder.record();
       setIsRecording(true);
       startPulse();
     } catch (e) {
@@ -76,14 +74,13 @@ export default function AIReminderScreen({ navigation }) {
   };
 
   const stopRecording = async () => {
-    if (!recording) return;
+    if (!isRecording) return;
     setIsRecording(false);
     stopPulse();
 
     try {
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      setRecording(null);
+      await audioRecorder.stop();
+      const uri = audioRecorder.uri;
 
       setLoading(true);
       setLoadingMsg('🎤 Transcribing your voice...');
