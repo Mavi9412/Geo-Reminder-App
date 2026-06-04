@@ -471,7 +471,7 @@ If this project helped you or you find it interesting, please **star the reposit
 
 It takes one second and makes a real difference — it helps other developers find the project and shows that the work is valued.
 
-[![Star on GitHub](https://img.shields.io/github/stars/ameermuavia2/GeoReminderApp?style=social)](https://github.com/ameermuavia2/GeoReminderApp)
+[![Star on GitHub](https://img.shields.io/github/stars/ameermuavia2/GeoReminderApp?style=social)](https://github.com/Mavi9412/Geo-Reminder-App)
 
 ---
 
